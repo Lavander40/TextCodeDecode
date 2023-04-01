@@ -1,4 +1,3 @@
-import sys
 from tkinter import *
 from tkinter.scrolledtext import ScrolledText
 from tkinter import filedialog as fd
@@ -47,7 +46,7 @@ def saveFile(e):
 
 def saveFileAs(e):
     global fileName
-    fileName = fd.asksaveasfilename(initialdir="data/enc", filetypes=(('enc text files', '*.txtx'),)) + ".txt"
+    fileName = fd.asksaveasfilename(initialdir="data/enc", filetypes=(('enc text files', '*.txtx'),)) + ".txtx"
     if fileName:
         saveFile(False)
 
@@ -113,7 +112,7 @@ fileMenu.add_command(label="Открыть", command=lambda: openFile(False), ac
 fileMenu.add_command(label="Сохранить", command=lambda: saveFile(False), accelerator="Clrl+S")
 fileMenu.add_command(label="Сохранить как...", command=lambda: saveFileAs(False), accelerator="Clrl+Shift+S")
 fileMenu.add_separator()
-fileMenu.add_command(label="Выход", command=lambda: sys.exit())
+fileMenu.add_command(label="Выход", command=lambda: app.destroy())
 
 editMenu = Menu(mainMenu, tearoff=False)
 mainMenu.add_cascade(label="Правка", menu=editMenu)
