@@ -1,0 +1,5 @@
+*.txt
+
+.idea/
+venv/
+data/mdl/__pycache__/
