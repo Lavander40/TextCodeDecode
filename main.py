@@ -1,7 +1,9 @@
+import os
 from tkinter import *
 from tkinter.scrolledtext import ScrolledText
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
+
 import data.mdl.encryption as enc
 
 
@@ -10,6 +12,38 @@ global fileName
 fileName = False
 global selected
 selected = False
+global confPath
+confPath = 'data/AmTCD.ini'
+global userKey
+userKey = ''
+
+
+# System Functions
+def confInit():
+    global userKey
+    if os.path.exists(confPath):
+        with open(confPath, 'r') as f:
+            for line in f:
+                line = line.split("=")
+                if line[0] == "keyuser":
+                    userKey = line[1]
+    else:
+        with open(confPath, 'w') as f:
+            f.write('[main]\nkeyuser=')
+        statusbar['text'] = "файл конфигурации был инициализирован"
+        confInit()
+
+
+def setKey(key):
+    global userKey
+    if os.path.exists(confPath):
+        with open(confPath, 'w') as f:
+            f.write('[main]\nkeyuser=' + key)
+            userKey = key
+        statusbar['text'] = "ключ пользователя был установлен"
+    else:
+        confInit()
+        setKey(key)
 
 
 # File Menu Functions
@@ -71,6 +105,20 @@ def paste(keyboardInput):
         textInput.insert(pos, selected)
 
 
+def settings():
+    global userKey
+    confInit()
+    settingWin = Toplevel(app)
+    settingWin.title("Настройка ключа")
+    settingWin.geometry("300x200+" + str(app.winfo_screenwidth() // 3) + "+" + str(app.winfo_screenheight() // 3))
+    Label(settingWin, wraplength=250, text="Ключ шифрования пользователя: ", pady=20).pack()
+    keyEntry = Entry(settingWin)
+    keyEntry.insert(0, userKey)
+    keyEntry.pack()
+    Button(settingWin, text="Установить значение колюча", command=lambda: setKey(keyEntry.get())).pack(pady=10)
+    Button(settingWin, text="Закрыть", command=lambda: settingWin.destroy()).pack(pady=5)
+
+
 # Help Menu Functions
 def certificate():
     certificateWin = Toplevel(app)
@@ -93,6 +141,7 @@ app = Tk()
 app.geometry("650x410+" + str(app.winfo_screenwidth()//4) + "+" + str(app.winfo_screenheight()//4))
 app.title("Текстовый шифратор")
 app.resizable(False, False)
+
 
 # Bindings
 app.bind('<Control-Key-o>', openFile)
@@ -119,7 +168,7 @@ mainMenu.add_cascade(label="Правка", menu=editMenu)
 editMenu.add_command(label="Копировать", command=lambda: copy(False), accelerator="Clrl+C")
 editMenu.add_command(label="Вставить", command=lambda: paste(False), accelerator="Clrl+V")
 editMenu.add_separator()
-editMenu.add_command(label="Параметры...")
+editMenu.add_command(label="Параметры...", command=settings)
 
 helpMenu = Menu(mainMenu, tearoff=False)
 mainMenu.add_cascade(label="Справка", menu=helpMenu)
