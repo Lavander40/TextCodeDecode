@@ -27,6 +27,8 @@ def confInit():
                 line = line.split("=")
                 if line[0] == "keyuser":
                     userKey = line[1]
+            if userKey == '':
+                statusbar['text'] = "ключ шифрования не задан, задайте его в меню Правка/Настройки"
     else:
         with open(confPath, 'w') as f:
             f.write('[main]\nkeyuser=')
@@ -38,7 +40,7 @@ def setKey(key):
     global userKey
     if os.path.exists(confPath):
         with open(confPath, 'w') as f:
-            f.write('[main]\nkeyuser=' + key)
+            f.write('[main]\nkeyuser=' + str(key))
             userKey = key
         statusbar['text'] = "ключ пользователя был установлен"
     else:
@@ -59,8 +61,11 @@ def openFile(e):
     fileName = fd.askopenfilename(initialdir="data/enc", filetypes=(('enc text files', '*.txtx'), ('All files', '*.*')))
     if fileName:
         with open(fileName, "r") as file:
-            text = file.read()
-            text = enc.DecodeText(text)
+            for line in file:
+                line = line.split("=")
+                if line[0] == "text":
+                    text = line[1]
+            text = enc.DecodeText(text, userKey)
             textInput.delete("1.0", END)
             textInput.insert("1.0", text)
         statusbar['text'] = "был открыт файл " + fileName
@@ -70,9 +75,9 @@ def saveFile(e):
     global fileName
     if fileName:
         text = textInput.get("1.0", END)
-        text = enc.CodeText(text)
+        text = enc.CodeText(text, userKey)
         with open(fileName, "w") as file:
-            file.write(text)
+            file.write("[main]\nkey=" + str(userKey) + "\ntext=" + text)
         statusbar['text'] = "файл был сохранён по аддресу " + fileName
     else:
         saveFileAs(e)
@@ -98,9 +103,8 @@ def copy(keyboardInput):
 
 def paste(keyboardInput):
     global selected
-    if keyboardInput:
-        selected = app.clipboard_get()
-    elif selected:
+    selected = app.clipboard_get()
+    if not keyboardInput:
         pos = textInput.index(INSERT)
         textInput.insert(pos, selected)
 
@@ -117,6 +121,8 @@ def settings():
     keyEntry.pack()
     Button(settingWin, text="Установить значение колюча", command=lambda: setKey(keyEntry.get())).pack(pady=10)
     Button(settingWin, text="Закрыть", command=lambda: settingWin.destroy()).pack(pady=5)
+    errorLabel = Label(settingWin)
+    errorLabel.pack(pady=5)
 
 
 # Help Menu Functions
@@ -186,4 +192,5 @@ statusbar = Label(app, text="Ожидаем ввода...", bd=1, relief=SUNKEN,
 statusbar.pack(side=BOTTOM, fill=X)
 
 # App Start
+confInit()
 app.mainloop()
