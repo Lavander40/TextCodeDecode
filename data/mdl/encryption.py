@@ -22,7 +22,7 @@ def DecodeText(encText, key):
 
     i = 0
     for litera in range(0, len(encText)):
-        text.append(chr(int(encText[litera]) - int(keyList[i])))
+        text.append(chr(abs(int(encText[litera]) - int(keyList[i]))))
         if i == len(keyList) - 1:
             i = 0
         else:

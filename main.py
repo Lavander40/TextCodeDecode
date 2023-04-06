@@ -27,8 +27,7 @@ def confInit():
                 line = line.split("=")
                 if line[0] == "keyuser":
                     userKey = line[1]
-            if userKey == '':
-                statusbar['text'] = "ключ шифрования не задан, задайте его в меню Правка/Настройки"
+
     else:
         with open(confPath, 'w') as f:
             f.write('[main]\nkeyuser=')
@@ -38,6 +37,9 @@ def confInit():
 
 def setKey(key):
     global userKey
+    if key == '':
+        statusbar['text'] = "ключ шифрования не задан, задайте его в меню Правка/Параметры"
+        return
     if os.path.exists(confPath):
         with open(confPath, 'w') as f:
             f.write('[main]\nkeyuser=' + str(key))
@@ -46,6 +48,13 @@ def setKey(key):
     else:
         confInit()
         setKey(key)
+
+
+def keyCheck():
+    if userKey == '':
+        statusbar['text'] = "ключ шифрования не задан, задайте его в меню Правка/Настройки"
+        return False
+    return True
 
 
 # File Menu Functions
@@ -58,6 +67,8 @@ def newFile():
 
 def openFile(e):
     global fileName
+    if not keyCheck():
+        return
     fileName = fd.askopenfilename(initialdir="data/enc", filetypes=(('enc text files', '*.txtx'), ('All files', '*.*')))
     if fileName:
         with open(fileName, "r") as file:
@@ -73,6 +84,8 @@ def openFile(e):
 
 def saveFile(e):
     global fileName
+    if not keyCheck():
+        return
     if fileName:
         text = textInput.get("1.0", END)
         text = enc.CodeText(text, userKey)
@@ -85,6 +98,8 @@ def saveFile(e):
 
 def saveFileAs(e):
     global fileName
+    if not keyCheck():
+        return
     fileName = fd.asksaveasfilename(initialdir="data/enc", filetypes=(('enc text files', '*.txtx'),)) + ".txtx"
     if fileName:
         saveFile(False)
