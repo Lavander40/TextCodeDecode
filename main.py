@@ -3,9 +3,7 @@ from tkinter import *
 from tkinter.scrolledtext import ScrolledText
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
-
 import data.mdl.encryption as enc
-
 
 # Globals
 global fileName
@@ -17,7 +15,6 @@ confPath = 'data/AmTCD.ini'
 global userKey
 userKey = ''
 
-
 # System Functions
 def confInit():
     global userKey
@@ -27,43 +24,38 @@ def confInit():
                 line = line.split("=")
                 if line[0] == "keyuser":
                     userKey = line[1]
-
     else:
         with open(confPath, 'w') as f:
             f.write('[main]\nkeyuser=')
-        statusbar['text'] = "файл конфигурации был инициализирован"
+        statusbar['text'] = "Файл конфигурации был инициализирован"
         confInit()
-
 
 def setKey(key):
     global userKey
     if key == '':
-        statusbar['text'] = "ключ шифрования не задан, задайте его в меню Правка/Параметры"
+        statusbar['text'] = "Ключ шифрования не задан, задайте его в меню Правка/Параметры"
         return
     if os.path.exists(confPath):
         with open(confPath, 'w') as f:
             f.write('[main]\nkeyuser=' + str(key))
             userKey = key
-        statusbar['text'] = "ключ пользователя был установлен"
+        statusbar['text'] = "Ключ пользователя был установлен"
     else:
         confInit()
         setKey(key)
 
-
 def keyCheck():
     if userKey == '':
-        statusbar['text'] = "ключ шифрования не задан, задайте его в меню Правка/Настройки"
+        statusbar['text'] = "Ключ шифрования не задан, задайте его в меню Правка/Настройки"
         return False
     return True
-
 
 # File Menu Functions
 def newFile():
     global fileName
     fileName = False
     textInput.delete("0.0", END)
-    statusbar['text'] = "был создан новый файл"
-
+    statusbar['text'] = "Был создан новый файл"
 
 def openFile(e):
     global fileName
@@ -79,8 +71,7 @@ def openFile(e):
             text = enc.DecodeText(text, userKey)
             textInput.delete("1.0", END)
             textInput.insert("1.0", text)
-        statusbar['text'] = "был открыт файл " + fileName
-
+        statusbar['text'] = "Был открыт файл " + fileName
 
 def saveFile(e):
     global fileName
@@ -91,10 +82,9 @@ def saveFile(e):
         text = enc.CodeText(text, userKey)
         with open(fileName, "w") as file:
             file.write("[main]\nkey=" + str(userKey) + "\ntext=" + text)
-        statusbar['text'] = "файл был сохранён по аддресу " + fileName
+        statusbar['text'] = "Файл был сохранён по аддресу " + fileName
     else:
         saveFileAs(e)
-
 
 def saveFileAs(e):
     global fileName
@@ -103,7 +93,6 @@ def saveFileAs(e):
     fileName = fd.asksaveasfilename(initialdir="data/enc", filetypes=(('enc text files', '*.txtx'),)) + ".txtx"
     if fileName:
         saveFile(False)
-
 
 # Edit Menu Functions
 def copy(keyboardInput):
@@ -115,7 +104,6 @@ def copy(keyboardInput):
         app.clipboard_clear()
         app.clipboard_append(selected)
 
-
 def paste(keyboardInput):
     global selected
     selected = app.clipboard_get()
@@ -123,13 +111,15 @@ def paste(keyboardInput):
         pos = textInput.index(INSERT)
         textInput.insert(pos, selected)
 
-
 def settings():
     global userKey
     confInit()
     settingWin = Toplevel(app)
     settingWin.title("Настройка ключа")
-    settingWin.geometry("300x200+" + str(app.winfo_screenwidth() // 3) + "+" + str(app.winfo_screenheight() // 3))
+    x = app.winfo_x()
+    y = app.winfo_y()
+    settingWin.geometry("300x200+%d+%d" %(x+100,y+50))#+" + str(app.winfo_screenwidth() // 3) + "+" + str(app.winfo_screenheight() // 3))
+    #app.eval('tk::PlaceWindow %s center' % app.winfo_toplevel())
     Label(settingWin, wraplength=250, text="Ключ шифрования пользователя: ", pady=20).pack()
     keyEntry = Entry(settingWin)
     keyEntry.insert(0, userKey)
@@ -139,16 +129,17 @@ def settings():
     errorLabel = Label(settingWin)
     errorLabel.pack(pady=5)
 
-
 # Help Menu Functions
 def certificate():
     certificateWin = Toplevel(app)
     certificateWin.title("Справка")
-    certificateWin.geometry("300x200+" + str(app.winfo_screenwidth()//3) + "+" + str(app.winfo_screenheight()//3))
+    x = app.winfo_x()
+    y = app.winfo_y()
+    certificateWin.geometry("300x200+%d+%d" % (x + 100, y + 50)) #+" + str(app.winfo_screenwidth()//2) + "+" + str(app.winfo_screenheight()//2))
+    #app.eval('tk::PlaceWindow %s center' % app.winfo_toplevel())
     Label(certificateWin, wraplength=250,
-          text="Данная программа является приложением для прозрачного шифрования текста\nПрограмма позволяет создавать/открывать/сохранять зашифрованные файлы\nЛичный ключ для шифрования хранится в файле AmTCD.ini в директории /data").pack()
-    Button(certificateWin, text="Закрыть", command=lambda: certificateWin.destroy()).pack()
-
+          text="Данная программа является приложением для прозрачного шифрования текста\nПрограмма позволяет создавать/открывать/сохранять зашифрованные файлы\nЛичный ключ для шифрования хранится в файле AmTCD.ini в директории /data").pack(pady=10)
+    Button(certificateWin, text="Закрыть", command=lambda: certificateWin.destroy()).pack(pady=10)
 
 def aboutApp():
     mb.showinfo(
@@ -156,14 +147,13 @@ def aboutApp():
         message="Программа для прозрачного шифрования\n(с) Астаев К.А., БСБО-03-20 МИРЭА 2023г."
     )
 
-
 # Main app settings
 app = Tk()
-app.geometry("650x410+" + str(app.winfo_screenwidth()//4) + "+" + str(app.winfo_screenheight()//4))
+app.geometry("650x410") #+" + str(app.winfo_screenwidth()//4) + "+" + str(app.winfo_screenheight()//4))
+#app.eval('tk::PlaceWindow . center')
 app.title("Текстовый шифратор")
+app.iconbitmap("data/icon.ico")
 app.resizable(False, False)
-
-
 # Bindings
 app.bind('<Control-Key-o>', openFile)
 app.bind('<Control-Key-s>', saveFile)
@@ -189,7 +179,7 @@ mainMenu.add_cascade(label="Правка", menu=editMenu)
 editMenu.add_command(label="Копировать", command=lambda: copy(False), accelerator="Clrl+C")
 editMenu.add_command(label="Вставить", command=lambda: paste(False), accelerator="Clrl+V")
 editMenu.add_separator()
-editMenu.add_command(label="Параметры...", command=settings)
+editMenu.add_command(label="Параметры", command=settings)
 
 helpMenu = Menu(mainMenu, tearoff=False)
 mainMenu.add_cascade(label="Справка", menu=helpMenu)
@@ -197,15 +187,13 @@ helpMenu.add_command(label="Содержание", command=certificate)
 helpMenu.add_separator()
 helpMenu.add_command(label="О программе...", command=aboutApp)
 
-
 # Text input section
 textInput = ScrolledText(app, wrap="char")
 textInput.pack()
-
 # TaskBar
 statusbar = Label(app, text="Ожидаем ввода...", bd=1, relief=SUNKEN, anchor=W)
 statusbar.pack(side=BOTTOM, fill=X)
-
 # App Start
 confInit()
 app.mainloop()
+
